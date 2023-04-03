@@ -1,13 +1,15 @@
-FROM golang:alpine
+FROM golang:alpine as build
 
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
-
 COPY . .
 
-RUN go build -o ./build/fizzbuzz
+RUN go build -o build/fizzbuzz
 
-CMD [ "./build/fizzbuzz", "serve" ]
+FROM scratch
+
+COPY --from=build /app/build/fizzbuzz /
+
+COPY --from=build /app/templates/index.html /templates/
+
+CMD ["/fizzbuzz", "serve"]
